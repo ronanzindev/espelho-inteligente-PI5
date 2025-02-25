@@ -1,70 +1,38 @@
 const NodeHelper = require('node_helper')
-const faceapi = require('face-api.js')
 const Log = require("logger")
-const canvas = require('canvas')
-const path = require('path')
-const express =require('express')
-const {createServer} = require('http')
-const {Server} = require('socket.io')
+const WebSocket = require("ws")
 
 module.exports = NodeHelper.create({
     async start() {
         Log.log(`Starting node helper for: ${this.name}`);
-        const { Canvas, Image, ImageData } = canvas;
-        faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
-        await this.loadModels()
-        this.startWebSocketServer()
+        this.startWebSocketClient()
+        this.notifyAAA()
     },
-    async loadModels() {
-        try {
-            const modelPath = path.join(__dirname, "models");
-            await faceapi.nets.tinyFaceDetector.loadFromDisk(modelPath);
-            await faceapi.nets.faceLandmark68Net.loadFromDisk(modelPath);
-            await faceapi.nets.faceRecognitionNet.loadFromDisk(modelPath);
-            await faceapi.nets.faceExpressionNet.loadFromDisk(modelPath);
-
-            Log.log("Modelos do face-api.js carregados com sucesso!");
-        } catch (error) {
-            Log.error("Erro ao carregar os modelos:", error);
-        }
+    notifyAAA() {
+        Log.log("Enviando notificação TESTE"); // Log para verificar se a notificação está sendo enviada
+        this.sendSocketNotification("TESTE", "TESTE");
     },
-    startWebSocketServer() {
-        const app = express();
-        const server = createServer(app);
-        this.io = new Server(server, { cors: { origin: "*" } });
-
-        this.io.on("connection", (socket) => {
-            Log.log("Cliente conectado ao WebSocket");
-
-            socket.on("video_frame", async (data) => {
-                const result = await this.processFrame(data);
-                socket.emit("face_result", result);
-            });
-        });
-
-        server.listen(3001, () => {
-            Log.log("Servidor WebSocket rodando na porta 3001");
-        });
-    },
-
-    /**
-    * @param {string} imagePath
-    */
-    async processFrame(base64Image) {
-        try {
-            const img = await canvas.loadImage(`data:image/jpeg;base64,${base64Image}`);
-            const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-                .withFaceLandmarks()
-                .withFaceExpressions();
-
-            if (detection) {
-                return detection.expressions;
-            } else {
-                return { message: "Nenhum rosto encontrado" };
+    startWebSocketClient() {
+        const ws = new WebSocket("ws://127.0.0.1:9999")
+        ws.on("open", () => {
+            Log.info("Conectado ao servidor websocket")
+        })
+        ws.on("message", (data) => {
+            try {
+                const parsedData = JSON.parse(data);
+                this.sendSocketNotification("FACE_RECOGNITION_DATA", parsedData);
+            }catch(ex) {
+                Log.error("Erro ao processar mensagem do WebSocket:", error);
             }
-        } catch (error) {
-            Log.error("Erro ao processar frame:", error);
-            return { error: "Erro ao processar frame" };
-        }
-    }
+        })
+        ws.on("error", (error) => {
+            Log.error("Erro no WebSocket:", error);
+        });
+
+        ws.on("close", () => {
+            Log.log("WebSocket fechado. Tentando reconectar em 5 segundos...");
+            setTimeout(() => this.startWebSocketClient(), 5000);
+        });
+
+    },
 })
