@@ -1,7 +1,13 @@
 Module.register("MMM-FaceRec", {
     defaults: {},
-    recognizedNames: [], // Armazena os nomes reconhecidos
-
+    recognizedNames: [], //
+    emotion: "",
+    emotions: {
+        "sad": "triste",
+        "neutral": "normal",
+        "happy": "feliz",
+        "fear": "com medo"
+    },
     start() {
         Log.log("MMM-FaceRec iniciado!");
         this.sendSocketNotification("TESTE", "TESTE"); // Envia uma notificação de teste
@@ -15,16 +21,17 @@ Module.register("MMM-FaceRec", {
                 wrapper.innerHTML += `<div>Olá, ${name}</div>`;
             });
         }
-
+        wrapper.innerHTML += `<div>Você está ${this.emotions[this.emotion] || "desconhecido"}.</div>`
         return wrapper;
     },
 
     socketNotificationReceived: function(notification, payload) {
-        Log.log(`Notificação recebida: ${notification}`);
         if (notification === "FACE_RECOGNITION_DATA") {
-            Log.log("Rostos reconhecidos:", payload.recognized_names);
-            this.recognizedNames = payload.recognized_names;
-            this.updateDom();
+            if(payload.data) {
+                this.recognizedNames = payload.data.names
+                this.emotion = payload.data.emotion
+                this.updateDom();
+            }
         }
     },
 });
