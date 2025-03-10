@@ -19,7 +19,7 @@ def get_openai_response(prompt):
     full_prompt = "\n".join(conversation_history) + "\nIA:"
 
     response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "Você é um espelho mágico, seu nome é Mastigador."},
             {"role": "user", "content": full_prompt}
