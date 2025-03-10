@@ -21,7 +21,7 @@ Module.register("MMM-FaceRec", {
                 wrapper.innerHTML += `<div>Olá, ${name}</div>`;
             });
         }
-        wrapper.innerHTML += `<div>Você está ${this.emotions[this.emotion] || "desconhecido"}.</div>`
+        wrapper.innerHTML += `${this.emotions[this.emotion] ? `<div>Você está ${this.emotions[this.emotion]}.</div>` : ''}`
         return wrapper;
     },
 
