@@ -13,7 +13,7 @@ from openai_client import get_openai_response
 
 load_dotenv()
 
-PICOVOICE_API_KEY = os.getenv("PICOVOICE_API_KEY")
+PICOVOICE_API_KEY = "XBwuWrHCfCSA4COrJXSyZ9/B1xmtbcFVGUD1My9hXbQ0DjHYQmjwxw=="
 KEYWORD_PATH = "pvconfig/wake_word_mastigador.ppn"
 MODEL_PATH = "pvconfig/porcupine_params_pt.pv"
 
@@ -56,7 +56,7 @@ def listen_for_keyword():
         recorder.delete()
         porcupine.delete()
 
-def record_audio():
+def record_audio(): #zoou aqui
     frames = []
     silence_frames = 0
     max_silence_frames = int(16000 / 512 * silence)
