@@ -7,6 +7,8 @@ import threading
 from deepface import DeepFace
 from openai_client import get_openai_response
 from voice_listener import listen_for_keyword
+from capturaaudio import perguntar
+from capturaaudio import falar_texto
 
 last_emotion = ""
 last_name = ""
@@ -76,13 +78,18 @@ async def recognize_faces(websocket, path=None):
         cap.release()
 
 async def main():
-    server = await websockets.serve(recognize_faces, "0.0.0.0", 9999) # Aceita conexões de qualquer IP
-    print("Servidor WebSocket rodando na porta 9999...")
 
-    voice_thread = threading.Thread(target=listen_for_keyword)
-    voice_thread.daemon = True
-    voice_thread.start()
+    print("Palavra-chave detectada! Iniciando reconhecimento facial e servidor WebSocket...")
+    
+    server = await websockets.serve(recognize_faces, "0.0.0.0", 9999)
+    print("Servidor WebSocket rodando na porta 9999...")
+    print("Aguardando palavra-chave...")
+    while True:
+        listen_for_keyword("espelho mágico")
+        falar_texto("Sim, como posso ajudar?")
+        perguntar()
 
     await server.wait_closed()
+
 
 asyncio.run(main())
