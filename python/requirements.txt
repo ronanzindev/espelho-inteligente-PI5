@@ -14,3 +14,6 @@ retina-face>=0.0.1
 fire>=0.4.0
 gunicorn>=20.1.0
 tf-keras
+pvrecorder>=1.2.5
+pvporcupine>=3.0.5
+pvleopard>=2.0.5
